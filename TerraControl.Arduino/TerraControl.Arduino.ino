@@ -3,18 +3,20 @@
 #include <dht11.h>
 #define DHT11PIN 7
 
-dht11 DHT11;
-int red_light_pin= 7;
-int green_light_pin = 6;
-int blue_light_pin = 5;
-
-SoftwareSerial BTSerial (11, 12);
+#define RED_PIN 6
+#define GREEN_PIN 5
+#define BLUE_PIN  4
 
 const byte numChars = 32;
-char receivedChars[numChars];
 
+SoftwareSerial BTSerial (11, 12);
+dht11 DHT11;
+
+byte receivedChars[numChars];
 boolean newData = false;
-
+byte startMarker = 0x3C;
+byte endMarker = 0x3E;
+byte rgb[3];
 void setup() {
     BTSerial.begin(9600);
     pinMode (8, OUTPUT);
@@ -30,8 +32,7 @@ void loop() {
 void recvWithStartEndMarkers() {
     static boolean recvInProgress = false;
     static byte ndx = 0;
-    byte startMarker = 0x3C;
-    byte endMarker = 0x3E;
+
     char rc;
  
     while (BTSerial.available() > 0 && newData == false) {
@@ -46,7 +47,7 @@ void recvWithStartEndMarkers() {
                 }
             }
             else {
-                receivedChars[ndx] = '\0'; // terminate the string
+                //receivedChars[ndx] = '\0'; // terminate the string
                 recvInProgress = false;
                 ndx = 0;
                 newData = true;
@@ -61,22 +62,22 @@ void recvWithStartEndMarkers() {
 
 void showNewData() {
     if (newData == true) {
-        if(receivedChars[0] == 'L')
+        if(receivedChars[0] == 0x13)
         {
-          playLight();
+          RGB_color(receivedChars[1], receivedChars[2], receivedChars[3]);
         }
-        else if(receivedChars[0] == 'N')
+        else if(receivedChars[0] == 0x14)
         {
             RGB_color(0, 0, 0); 
         }
-        else if(receivedChars[0] == 'T')
+        else if(receivedChars[0] == 0x11)
         {
             int temp = (int)DHT11.temperature;
             BTSerial.write('T');
             BTSerial.write(temp);
             BTSerial.write(0xFF);
         }
-        else if(receivedChars[0] == 'H')
+        else if(receivedChars[0] == 0x12)
         {
             int hum = (int)DHT11.humidity;
 
@@ -84,34 +85,19 @@ void showNewData() {
             BTSerial.write(hum);
             BTSerial.write(0xFF);
         }
-          else if(receivedChars[0] == 'C')
+          else
         {
-
+           RGB_color(receivedChars[0], receivedChars[1], receivedChars[2]);
         }
         newData = false;
     }
 }
  void playLight() {
-  RGB_color(255, 0, 0); // Red
-  delay(1000);
-  RGB_color(0, 255, 0); // Green
-  delay(1000);
-  RGB_color(0, 0, 255); // Blue
-  delay(1000);
-  RGB_color(255, 255, 125); // Raspberry
-  delay(1000);
-  RGB_color(0, 255, 255); // Cyan
-  delay(1000);
-  RGB_color(255, 0, 255); // Magenta
-  delay(1000);
-  RGB_color(255, 255, 0); // Yellow
-  delay(1000);
-  RGB_color(255, 255, 255); // White
-  delay(1000);
+
 }
  void RGB_color(int red_light_value, int green_light_value, int blue_light_value)
  {
-  analogWrite(red_light_pin, red_light_value);
-  analogWrite(green_light_pin, green_light_value);
-  analogWrite(blue_light_pin, blue_light_value);
+  analogWrite(RED_PIN, red_light_value);
+  analogWrite(GREEN_PIN, green_light_value);
+  analogWrite(BLUE_PIN, blue_light_value);
 }
