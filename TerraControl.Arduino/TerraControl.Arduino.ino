@@ -20,6 +20,7 @@ byte rgb[3];
 void setup() {
     BTSerial.begin(9600);
     pinMode (8, OUTPUT);
+    pinMode (3,OUTPUT);
 
 }
 
@@ -62,7 +63,15 @@ void recvWithStartEndMarkers() {
 
 void showNewData() {
     if (newData == true) {
-        if(receivedChars[0] == 0x13)
+        if(receivedChars[0] == 0x15)
+        {
+          digitalWrite(3,HIGH);
+        }
+        else if(receivedChars[0] == 0x16)
+        {
+          digitalWrite(3,LOW);
+        }
+        else if(receivedChars[0] == 0x13)
         {
           RGB_color(receivedChars[1], receivedChars[2], receivedChars[3]);
         }
