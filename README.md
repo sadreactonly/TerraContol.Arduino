@@ -1,4 +1,4 @@
-# TerraContol.Arduino
+# TerraControl.Arduino
 ## Simple Arduino sketch for terrarium controlling.
 
 ###### Parts:
